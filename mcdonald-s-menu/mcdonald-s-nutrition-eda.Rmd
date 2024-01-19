@@ -1,0 +1,212 @@
+---
+title: "McDonald's Menu Analysis"
+author: "Amollo"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r,message=FALSE,warning=FALSE}
+#Libraries needed
+library(dplyr)
+library(ggplot2)
+library(ggrepel)
+library(RColorBrewer)
+library(GGally)
+library(tidyr)
+```
+
+```{r}
+#load in the data set 
+menu <- read.csv("menu.csv")
+
+```
+```{r}
+#now let's explore the data set, first off let's explore the category, for this i will plot histogram
+
+cat <-menu%>%
+  select(Category)%>%
+  group_by(Category)%>%
+  mutate(count=n())
+
+cat <-distinct(cat)
+
+plot_cat <-cat%>%
+  ggplot(aes(Category,count))+
+  geom_col(fill="skyblue")+
+  theme_classic()+ 
+  geom_text(aes(label=count),color="black",size=3)+
+  ggtitle("McDonald's Menu by Category")
+
+plot_cat
+
+#Waw, would never thought McDonals has a lot of coffee & tea menu, which is interesting finding
+
+```
+```{r}
+#next, always wonder how many category per categories, for this let's plot boxplot to get insight 
+
+cal <-menu%>%
+  select(Category,Item,Calories)%>%
+  group_by(Category)
+
+plot_cal <-cal%>%
+  ggplot(aes(Calories,Category,fill=Category))+
+  geom_boxplot()+
+  theme_classic()+
+  scale_fill_brewer(palette = "Set3")+
+  ggtitle("McDonald's Calories per Category")
+
+plot_cal
+
+#We are able to see from the boxplot the smoothies & shakes has the highest median from all. 
+
+#Next, just to answer my curiosity let's find the top 15 highest calories menu in McDonalds : 
+
+maxcal <-cal%>%
+  arrange(desc(Calories))%>%
+  head(15)%>%ggplot(aes(Calories,reorder(Item,Calories),fill=Item))+
+  geom_col()+
+  geom_text(aes(label =Calories), position=position_stack(vjust=0.5),color="black",size=3)+
+  theme_classic()+
+  ggtitle("TOP 15 McDonald's Menu with Most Calories")+theme(legend.position="none")
+
+maxcal
+
+#Let's do the same for the least calories in McDonald's menu. I noticed there's 0 cal inside our dataset so let's remove those by filtering Calories >0
+
+mincal <-cal%>%
+  filter(Calories>0)%>%
+  arrange(Calories)%>%
+  head(15)%>%ggplot(aes(Calories,reorder(Item,Calories),fill=Item))+
+  geom_col()+
+  geom_text(aes(label =Calories), position=position_stack(vjust=0.5),color="black",size=3)+
+  theme_classic()+
+  ggtitle("TOP 15 McDonald's Menu with Least Calories")+theme(legend.position="none")
+
+mincal
+
+```
+
+```{r}
+#now let's see total fat, for this again let's use boxplot. The group with highest fat content is in breakfast category  
+
+fat <-menu%>%
+  select(Category,Item,Total.Fat)%>%
+  group_by(Category)
+
+plot_fat <-fat%>%
+  ggplot(aes(Total.Fat,Category,fill=Category))+
+  geom_boxplot()+
+  theme_classic()+
+  scale_fill_brewer(palette = "Set3")+
+  ggtitle("McDonald's Fat Content per Categories")
+
+plot_fat
+```
+
+```{r}
+#Let's do the same for carbohydrates, and from the boxplot we can see that it's from smoothies & shakes! 
+
+carb <-menu%>%
+  select(Category,Item,Carbohydrates)%>%
+  group_by(Category)
+
+plot_carb <-carb%>%
+  ggplot(aes(Carbohydrates,Category,fill=Category))+
+  geom_boxplot()+
+  theme_classic()+
+  scale_fill_brewer(palette = "Set3")+
+  ggtitle("McDonald's Carb per Categories")
+
+plot_carb
+```
+
+```{r}
+#As for sugar, my bet before running the code it should be in the smoothies & shakes category. Let's plot the boxplot : 
+
+sugar <-menu%>%
+  select(Category,Item,Sugars)%>%
+  group_by(Category)
+
+plot_sugar <-sugar%>%
+  ggplot(aes(Sugars,Category,fill=Category))+
+  geom_boxplot()+
+  theme_classic()+
+  scale_fill_brewer(palette = "Set3")+
+  ggtitle("McDonald's Sugar Content per Categories")
+
+plot_sugar
+
+#Indeed, confirmed by the boxplot and just to answer my curiosity let's find the item with highest sugar contents :  
+
+maxsugar <-sugar%>%
+  arrange(desc(Sugars))%>%
+  head(15)%>%ggplot(aes(Sugars,reorder(Item,Sugars),fill=Item))+
+  geom_col()+
+  geom_text(aes(label =Sugars), position=position_stack(vjust=0.5),color="black",size=3)+
+  theme_classic()+
+  ggtitle("McDonald's Top 15 Item with Most Sugar Content")+theme(legend.position="none")
+
+maxsugar
+
+#Let's do the same for the least, and this time will filter out the dataset as well to avoid pulling the 0 Sugar inside 
+
+minsugar <-sugar%>%
+  filter(Sugars>0)%>%
+  arrange(Sugars)%>%
+  head(15)%>%ggplot(aes(Sugars,reorder(Item,Sugars),fill=Item))+
+  geom_col()+
+  geom_text(aes(label =Sugars), position=position_stack(vjust=0.5),color="black",size=3)+
+  theme_classic()+
+  ggtitle("McDonald's Top 15 Item with Least Sugar Content")+theme(legend.position="none")
+
+minsugar
+
+#Saw 3 iced coffee made in on the least, good insight and definitely will opt for this drink next time i visit McDonald's
+```
+```{r}
+#Now let's do the same analysis for protein. Prior to the coding, my hunch saying it should come from the beef & pork, but let's validate by running the code : 
+
+prot <-menu%>%
+  select(Category,Item,Protein)%>%
+  group_by(Category)
+
+plot_prot <-prot%>%
+  ggplot(aes(Protein,Category,fill=Category))+
+  geom_boxplot()+
+  theme_classic()+
+  scale_fill_brewer(palette = "Set3")+
+  ggtitle("McDonald's Protein Content per Categories")
+
+plot_prot
+
+#Alas! the chicken & fish is actually the one with the highest protein content 
+```
+```{r}
+#Last, what i want to do with this dataset is to find the correlation between sugar & carbohydrate 
+
+dat <-menu%>%
+  select(Item,Carbohydrates,Sugars)%>%
+  group_by(Item)
+
+plot_dat <-dat%>%
+  ggplot(aes(Carbohydrates,Sugars))+
+  geom_point()+
+  theme_classic()+
+  theme(legend.position="bottom")+
+  ggtitle("Carb vs. Sugar")
+
+plot_dat
+
+```
+```{r}
+#So what's affecting the total calory the most?
+
+tot_cal <-menu%>%select(Calories,Carbohydrates,Total.Fat,Sugars,Carbohydrates,Protein)  
+ggcorr(tot_cal, method = c("everything", "pearson"),size = 3, hjust = 0.77,label=TRUE,label_size=3,layout.exp = 1)
+
+```
+
